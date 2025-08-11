@@ -16,7 +16,7 @@ const Profile = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://localhost:5000/api/user/profile', {
+        const res = await fetch('https://wise-paper-backend.onrender.com/api/user/profile', {
           headers: { ...getAuthHeaders() }
         });
         const data = await res.json();
@@ -32,7 +32,7 @@ const Profile = () => {
     };
     const fetchBookmarks = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/user/bookmarks', {
+        const res = await fetch('https://wise-paper-backend.onrender.com/api/user/bookmarks', {
           headers: { ...getAuthHeaders() }
         });
         const data = await res.json();

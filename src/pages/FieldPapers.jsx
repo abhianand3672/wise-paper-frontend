@@ -38,7 +38,7 @@ const FieldPapers = () => {
     const fetchPapers = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:5000/api/papers/field/${fieldId}?limit=20`);
+        const response = await fetch(`https://wise-paper-backend.onrender.com/api/papers/field/${fieldId}?limit=20`);
         const data = await response.json();
         if (data.success) {
           setPapers(data.papers || []);
@@ -53,7 +53,7 @@ const FieldPapers = () => {
     };
     const fetchFieldInfo = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/papers/fields');
+        const response = await fetch('https://wise-paper-backend.onrender.com/api/papers/fields');
         const data = await response.json();
         const field = data.fields.find(f => f.id === fieldId);
         setFieldInfo(field);

@@ -22,7 +22,7 @@ const AIAssistant = () => {
     setInput('');
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/answer', {
+        const response = await fetch('https://wise-paper-backend.onrender.com/api/ai/answer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

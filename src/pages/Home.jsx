@@ -29,13 +29,13 @@ const Home = () => {
       try {
         // Test backend connectivity
         console.log("Testing backend connectivity...");
-        const healthResponse = await fetch("http://localhost:5000/api/health");
+        const healthResponse = await fetch("https://wise-paper-backend.onrender.com/api/health");
         const healthData = await healthResponse.json();
         console.log("Backend health:", healthData);
 
         // Fetch available fields
         const fieldsResponse = await fetch(
-          "http://localhost:5000/api/papers/fields"
+          "https://wise-paper-backend.onrender.com/api/papers/fields"
         );
         const fieldsData = await fieldsResponse.json();
         setFields(fieldsData.fields);
@@ -43,7 +43,7 @@ const Home = () => {
         // Fetch some featured papers (only arXiv)
         console.log("Fetching featured papers...");
         const papersResponse = await fetch(
-          "http://localhost:5000/api/papers/search?query=AI&source=arxiv&limit=12"
+          "https://wise-paper-backend.onrender.com/api/papers/search?query=AI&source=arxiv&limit=12"
         );
         const papersData = await papersResponse.json();
         console.log("Featured papers API response:", papersData);

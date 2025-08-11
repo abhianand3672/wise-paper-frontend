@@ -13,7 +13,7 @@ const PaperCard = ({ paper, inProfile, onUnbookmark }) => {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/user/bookmarks', {         
+      const res = await fetch('https://wise-paper-backend.onrender.com/api/user/bookmarks', {         
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify({ paper: { ...paper, paperId: paper.link || paper.paperId } })
@@ -28,7 +28,7 @@ const PaperCard = ({ paper, inProfile, onUnbookmark }) => {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/user/bookmarks/${encodeURIComponent(paper.link || paper.paperId)}`, {
+      const res = await fetch(`https://wise-paper-backend.onrender.com/api/user/bookmarks/${encodeURIComponent(paper.link || paper.paperId)}`, {
         method: 'DELETE',
         headers: { ...getAuthHeaders() }
       });

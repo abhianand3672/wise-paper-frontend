@@ -38,7 +38,7 @@ const Search = () => {
         source: selectedSource,
         limit: '20'
       });
-      const response = await fetch(`http://localhost:5000/api/papers/search?${params}`);
+      const response = await fetch(`https://wise-paper-backend.onrender.com/api/papers/search?${params}`);
       const data = await response.json();
       if (data.success) {
         setPapers(data.papers);
