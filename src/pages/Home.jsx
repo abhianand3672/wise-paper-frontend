@@ -70,7 +70,10 @@ const Home = () => {
   };
 
   const handleProtectedNav = (path) => {
-    if (user) {
+    if (path === "/search") {
+      // Allow direct access to search page
+      navigate(path);
+    } else if (user) {
       navigate(path);
     } else {
       setShowSignin(true);

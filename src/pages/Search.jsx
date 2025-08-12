@@ -3,12 +3,15 @@ import { useSearchParams } from 'react-router-dom';
 import PaperCard from '../components/PaperCard';
 
 const Search = () => {
+  console.log('Search component rendering');
+  
   const [searchParams, setSearchParams] = useSearchParams();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('query') || '');
   const [selectedSource, setSelectedSource] = useState(searchParams.get('source') || 'all');
+  const [searchHistory, setSearchHistory] = useState([]);
 
   const sources = [
     { value: 'all', label: 'All Sources' },
@@ -29,12 +32,13 @@ const Search = () => {
     'genetics'
   ];
 
-  const searchPapers = async (searchQuery = searchParams.get('query') || '') => {
-    if (!searchQuery.trim()) return;
+  const searchPapers = async (query = searchQuery) => {
+    if (!query.trim()) return;
     setLoading(true);
+    setError('');
     try {
       const params = new URLSearchParams({
-        query: searchQuery,
+        query: query,
         source: selectedSource,
         limit: '20'
       });
@@ -42,20 +46,24 @@ const Search = () => {
       const data = await response.json();
       if (data.success) {
         setPapers(data.papers);
-        // Add to search history
-        // This part of the logic needs to be adapted to handle search history
-        // For now, we'll just update the searchParams to reflect the current search
+        // Update search params
         setSearchParams(prev => {
           const newParams = new URLSearchParams(prev);
-          newParams.set('query', searchQuery);
+          newParams.set('query', query);
           newParams.set('source', selectedSource);
           return newParams;
+        });
+        // Add to search history
+        setSearchHistory(prev => {
+          const newHistory = [query, ...prev.filter(item => item !== query)].slice(0, 10);
+          return newHistory;
         });
       } else {
         setPapers([]);
         setError('Failed to fetch papers.');
       }
     } catch (error) {
+      console.error('Search error:', error);
       setPapers([]);
       setError('Network error or server issue.');
     } finally {
@@ -77,23 +85,35 @@ const Search = () => {
     // Load search history from localStorage
     const saved = localStorage.getItem('searchHistory');
     if (saved) {
-      // This part of the logic needs to be adapted to handle search history
-      // For now, we'll just update the searchParams to reflect the current search
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('query', clickedQuery);
-        newParams.set('source', selectedSource);
-        return newParams;
-      });
+      try {
+        const parsed = JSON.parse(saved);
+        setSearchHistory(parsed);
+      } catch (error) {
+        console.error('Error parsing search history:', error);
+      }
     }
   }, []);
 
   useEffect(() => {
     // Save search history to localStorage
-    // This part of the logic needs to be adapted to handle search history
-    // For now, we'll just update the searchParams to reflect the current search
-    localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+    if (searchHistory.length > 0) {
+      localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+    }
   }, [searchHistory]);
+
+  // Auto-search if query is in URL params
+  useEffect(() => {
+    const queryFromParams = searchParams.get('query');
+    if (queryFromParams && queryFromParams !== searchQuery) {
+      setSearchQuery(queryFromParams);
+      searchPapers(queryFromParams);
+    }
+    
+    // Debug logging
+    console.log('Search component mounted');
+    console.log('Current search params:', Object.fromEntries(searchParams.entries()));
+    console.log('Current search query:', searchQuery);
+  }, [searchParams]);
 
   return (
     <div className="space-y-8 p-4">
@@ -107,6 +127,7 @@ const Search = () => {
           Use AI to understand complex papers in simple terms.
         </p>
       </div>
+      
       {/* Search Form */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
         <div className="px-6 py-4">
@@ -139,8 +160,7 @@ const Search = () => {
               <div className="min-w-32">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Results</label>
                 <select
-                  value={limits[1]} // Default to 20
-                  onChange={(e) => setSelectedSource(e.target.value)}
+                  defaultValue={20}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                 >
                   {limits.map((l) => (
@@ -168,6 +188,7 @@ const Search = () => {
           </form>
         </div>
       </div>
+
       {/* Popular Searches */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
         <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
@@ -187,27 +208,36 @@ const Search = () => {
           </div>
         </div>
       </div>
+
       {/* Search History */}
-      {/* This section needs to be adapted to handle search history */}
-      {/* For now, it will show the current search query */}
-      {searchQuery && (
+      {searchHistory.length > 0 && (
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden max-w-4xl mx-auto">
           <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <h3 className="text-lg font-semibold">Recent Searches</h3>
           </div>
           <div className="px-6 py-4">
             <div className="flex flex-wrap gap-2">
-              <button
-                key={searchQuery}
-                onClick={() => handleQueryClick(searchQuery)}
-                className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-              >
-                {searchQuery}
-              </button>
+              {searchHistory.map((historyItem, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleQueryClick(historyItem)}
+                  className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                >
+                  {historyItem}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-4xl mx-auto">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
       {/* Search Results */}
       {papers.length > 0 && (
         <div>
@@ -222,8 +252,9 @@ const Search = () => {
           </div>
         </div>
       )}
+
       {/* No Results */}
-      {!loading && papers.length === 0 && searchQuery && (
+      {!loading && papers.length === 0 && searchQuery && !error && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">No papers found</h3>
@@ -241,6 +272,7 @@ const Search = () => {
           </div>
         </div>
       )}
+
       {/* Loading State */}
       {loading && (
         <div className="text-center py-12">
@@ -250,6 +282,6 @@ const Search = () => {
       )}
     </div>
   );
-};
-
+  };
+  
 export default Search; 
